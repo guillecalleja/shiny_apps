@@ -1,0 +1,70 @@
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+rm (list=ls())
+library(shiny)
+library(esquisse)
+library(ggplot2)
+install.packages(shinyTime)
+
+df= beaver1                          
+
+# Define UI for application that draws a histogram
+# k-means only works with numerical variables,
+# so don't give the user the option to select
+# a categorical variable
+# ui: code in the first tabPanel 
+
+vars <- names(beaver1)
+
+ui = fluidPage(   
+  headerPanel('Monsieur Castor'),
+  sidebarLayout(sidebarPanel(
+    selectInput('day', 'Le Jour', c('Aujourdhui','Au Demain')),
+    sliderInput("temp", "La Temperature:",
+                min = 36.33, max = 37.53, value = 37),
+    selectInput('activ',"L'Activité", c('Dormido','Despierto'),1),
+    img(src='DH_logo.png', align = "right")),
+  mainPanel(
+    plotOutput('plot1'))
+))
+
+# Define server logic required to draw a histogram
+server = function(input, output, session) {
+  tabla <- reactive({df[df$temp>input$temp,]})
+  
+  # Combine the selected variables into a new data frame
+  output$DH_logo <- renderImage({
+        list(src = "www/DH_logo.png")})
+  
+  
+  
+  
+  output$plot1 <- renderPlot({ggplot(tabla()) +
+      aes(x = temp, y = time, fill = activ, size = day) +
+      geom_point(shape = "asterisk", colour = "#112446") +
+      geom_smooth(span = 1L) +
+      scale_fill_viridis_c(option = "inferno", direction = 1) +
+      labs(
+        x = "La Temperature",
+        y = "Le Temps",
+        title = "Mon Ami le Castor",
+        subtitle = "Il est trop mignon!",
+        fill = "L'Activité",
+        size = "Le Jour"
+      ) +
+      theme_light() +
+      theme(legend.position = "left")
+  })
+  
+}
+
+
+
+# Run the application 
+shinyApp(ui = ui, server = server)
